@@ -1,0 +1,19 @@
+    #login, #panel > :not(#inscritos):not(#importar) { max-width: 680px; }   /* los formularios mantienen su ancho; solo la tabla se ensancha */
+  /* Carga de puntajes por grado (solo estructura; los colores salen de tu propio diseño) */
+  .imp-lista { max-height: 280px; overflow: auto; margin: 6px 0; }
+  #impPrevia details { margin: 8px 0; }
+  .ins-barra { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 12px 0; }
+  .ins-barra > div { flex: 1 1 150px; }
+  .ins-resumen { font-size: .9rem; opacity: .85; margin: 6px 0; }
+  .ins-tabla { overflow-x: auto; border: 1px solid rgba(143, 240, 180, .25); border-radius: 8px; margin-top: 8px; }
+  .ins-tabla table { width: 100%; border-collapse: collapse; min-width: 520px; }
+  .ins-tabla th, .ins-tabla td { padding: 6px 8px; text-align: left; border-bottom: 1px solid rgba(128, 160, 190, .2); vertical-align: middle; }
+  .ins-tabla th { font-size: .85rem; opacity: .85; white-space: nowrap; }
+  .ins-tabla input { width: 100%; padding: 6px 8px; }
+  .ins-tabla td.c-p { width: 110px; } .ins-tabla td.c-h { width: 160px; } .ins-tabla td.c-x { width: 52px; text-align: center; }
+  .ins-tabla td.c-n small { opacity: .7; }
+  .ins-tabla .estado { display: block; font-size: .8rem; margin-top: 3px; }
+  .ins-tabla tr.cargado td { background: rgba(143, 240, 180, .10); }
+  .ins-tabla tr.editado td:first-child { box-shadow: inset 3px 0 0 currentColor; }
+  .ins-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+  

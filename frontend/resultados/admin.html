@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cargar resultados</title>
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="fondo" aria-hidden="true"><span class="orbe o1"></span><span class="orbe o2"></span><span class="orbe o3"></span><span class="estrellas"></span></div>
+<main class="pagina" style="max-width:1080px">
+  <header class="cabecera cabecera-chica">
+    <img class="logo" src="/img/logo.png" alt="Logo Tarpuy" width="84" height="89">
+    <div class="titulo"><p class="etiqueta">Tarpuy</p><p class="marca">Panel de resultados</p></div>
+  </header>
+
+  <section id="login">
+    <h1>Panel de resultados</h1>
+    <form id="formLogin">
+      <label for="clave">Clave de acceso</label>
+      <input id="clave" type="password" autofocus>
+      <p><button class="primario">Entrar</button></p>
+      <p id="errLogin" class="error"></p>
+    </form>
+  </section>
+
+  <section id="panel" hidden>
+    <h1>Cargar resultados</h1>
+    <div class="barra">
+      <span>Estado: <strong id="estado"></strong></span>
+      <button id="btnPublicar" type="button"></button>
+    </div>
+
+    <label for="q">Buscar alumno por nombre o DNI</label>
+    <input id="q" placeholder="Escribe al menos 2 letras" autocomplete="off">
+    <ul id="lista" class="lista" hidden></ul>
+    <p id="msg" role="status"></p>
+
+    <details id="nuevo" class="ficha">
+      <summary><strong>Agregar alumno</strong> (inscripción de último momento)</summary>
+      <div style="margin-top:12px">
+        <label for="nTipo">Tipo de participante</label>
+        <select id="nTipo">
+          <option value="DELEGACION">Alumno de una delegación</option>
+          <option value="LIBRE">Alumno libre</option>
+        </select>
+
+        <div id="bloqueColegio" style="margin-top:12px">
+          <label for="qc">Colegio (escribe para buscar o elige de la lista)</label>
+          <input id="qc" list="colegiosLista" placeholder="Escribe o elige el colegio" autocomplete="off">
+          <datalist id="colegiosLista"></datalist>
+          <p id="colegioSel" hidden></p>
+        </div>
+
+        <div class="fila">
+          <div><label for="nNivel">Nivel</label><select id="nNivel"></select></div>
+          <div><label for="nGrado">Grado</label><select id="nGrado"></select></div>
+        </div>
+        <div class="fila">
+          <div><label for="nDni">DNI</label><input id="nDni" maxlength="12" inputmode="numeric" autocomplete="off"></div>
+          <div><label for="nNombre">Apellidos y nombres</label><input id="nNombre" autocomplete="off"></div>
+        </div>
+
+        <div id="bloquePagoDeleg">
+          <div class="fila">
+            <div><label for="dMonto">Monto pagado (S/)</label><input id="dMonto" type="number" min="0" step="1" value="13"></div>
+            <div><label for="dMedio">Medio de pago</label>
+              <select id="dMedio">
+                <option>Yape</option>
+                <option>Plin</option>
+                <option>Transferencia</option>
+                <option>Efectivo</option>
+              </select></div>
+          </div>
+          <div class="fila">
+            <div><label for="dOperacion" id="lblDOperacion">N.º de operación</label><input id="dOperacion" maxlength="60" autocomplete="off"></div>
+            <div></div>
+          </div>
+          <p style="opacity:.7;font-size:.85rem;margin:0 0 12px">Este monto se suma al monto de la ficha del colegio.</p>
+        </div>
+
+        <div id="bloqueLibre" hidden>
+          <div class="fila">
+            <div><label for="nTelefono">Teléfono</label><input id="nTelefono" maxlength="20" inputmode="tel" autocomplete="off" required></div>
+            <div><label for="nMonto">Monto pagado (S/)</label><input id="nMonto" type="number" min="0" step="1" value="15"></div>
+          </div>
+          <div class="fila">
+            <div><label for="nOperacion" id="lblOperacion">N.º de operación</label><input id="nOperacion" maxlength="60" autocomplete="off"></div>
+            <div><label for="nMedio">Medio de pago</label>
+              <select id="nMedio">
+                <option>Yape</option>
+                <option>Plin</option>
+                <option>Transferencia</option>
+                <option>Efectivo</option>
+              </select></div>
+          </div>
+          <div class="fila">
+            <div><label for="nPagador">Pagador</label><input id="nPagador" maxlength="120" autocomplete="off" required></div>
+            <div><label for="nVerificado">Pago verificado</label>
+              <label style="display:flex;align-items:center;gap:8px;opacity:1;font-size:1rem">
+                <input id="nVerificado" type="checkbox" style="width:auto"> Sí, ya verifiqué el pago</label></div>
+          </div>
+        </div>
+
+        <div class="acciones"><button id="btnAgregar" type="button" class="primario">Agregar alumno</button></div>
+        <p id="msgN" role="status"></p>
+      </div>
+    </details>
+
+    <form id="ficha" class="ficha" hidden>
+      <strong id="fNombre"></strong>
+      <div id="fDatos"></div>
+      <div class="fila">
+        <div><label for="p" id="lblP">Puntaje</label>
+          <input id="p" type="number" step="0.01" min="-100" required></div>
+        <div><label for="h">Hora de entrega (con segundos)</label>
+          <input id="h" type="time" step="1" required></div>
+      </div>
+      <div class="acciones">
+        <button class="primario">Guardar resultado</button>
+        <button type="button" id="btnCancelar">Cancelar</button>
+        <button type="button" id="btnBorrar" class="peligro" hidden>Borrar resultado</button>
+      </div>
+    </form>
+
+    <details id="inscritos" class="ficha" open>
+      <summary><strong>Cargar puntajes y hora de entrega por grado</strong></summary>
+      <div class="ins-barra">
+        <div style="flex:2 1 260px"><label for="iGrado">1. Elige el grado que vas a rellenar</label>
+          <select id="iGrado"><option value="">Selecciona un grado…</option></select></div>
+        <div><label for="iColegio">Colegio (opcional)</label><select id="iColegio"><option value="">Todos</option></select></div>
+        <div><label for="iBuscar">Buscar (nombre o DNI)</label><input id="iBuscar" autocomplete="off" placeholder="Escribe para filtrar"></div>
+        <div style="flex:0 0 auto"><button type="button" id="iRefrescar">Actualizar lista</button></div>
+      </div>
+      <p id="iResumen" class="ins-resumen">Cargando inscritos…</p>
+      <div id="iTabla"></div>
+      <div id="iAcciones" class="ins-acciones" hidden>
+        <button type="button" class="primario" id="iGuardar">Guardar puntajes de este grado</button>
+        <span id="iMsg" class="ins-resumen" role="status"></span>
+      </div>
+    </details>
+    <details id="importar" class="ficha">
+      <summary><strong>Importar puntajes desde Excel o CSV</strong>: se asignan automáticamente por DNI</summary>
+      <p class="ins-resumen">El archivo debe tener tres columnas: <strong>dni</strong>, <strong>puntaje</strong> y <strong>hora_entrega</strong> (por ejemplo 09:41:12). Si un alumno ya tenía resultado, se reemplaza. Quien no aparezca en el archivo sigue como «No rindió».</p>
+      <label for="impArchivo">Archivo (.xlsx, .xls o .csv)</label>
+      <input id="impArchivo" type="file" accept=".csv,.txt,.xlsx,.xls">
+      <p id="impMsg" class="ins-resumen" role="status"></p>
+      <div id="impPrevia" hidden>
+        <p id="impResumen" class="ins-resumen"></p>
+        <details id="impListas"><summary>Alumnos que se importarán</summary><div id="impListaTxt" class="ins-tabla imp-lista"></div></details>
+        <details id="impNoEnc" hidden><summary>DNI que no están en la base (no se importarán)</summary><div id="impNoEncTxt" class="ins-resumen imp-lista"></div></details>
+        <details id="impErr" hidden open><summary>Filas con errores</summary><div id="impErrTxt" class="ins-resumen imp-lista"></div></details>
+        <p id="impAviso" class="ins-resumen error"></p>
+        <div class="ins-acciones">
+          <button type="button" class="primario" id="impConfirmar">Importar puntajes</button>
+          <button type="button" id="impCancelar">Cancelar</button>
+        </div>
+      </div>
+    </details>
+  </section>
+</main>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
