@@ -8,61 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Exo+2:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
-<div class="fondo" aria-hidden="true"></div>
-<main class="pagina">
-  <header class="cabecera">
-    <img class="logo" src="/img/logo.png" alt="Logo Tarpuy" width="250" height="270">
-    <div class="titulo">
-      <h1>Resultados del concurso</h1>
-    </div>
-  </header>
-
-  <div id="estado" class="aviso">Cargando resultados…</div>
-
-  <div id="app" hidden>
-    <div class="tabs" role="tablist" aria-label="Tipo de ranking">
-      <button type="button" role="tab" id="tabGrado" aria-selected="true">Ranking por grado</button>
-      <button type="button" role="tab" id="tabGeneral" aria-selected="false">Ranking general</button>
-      <button type="button" role="tab" id="tabColegios" aria-selected="false">Ranking de delegaciones</button>
-    </div>
-
-    <div class="filtros">
-      <div class="solo-alumnos">
-        <label for="buscar">Buscar alumno</label>
-        <input id="buscar" list="nombres" placeholder="Escribe un nombre o apellido" autocomplete="off">
-        <datalist id="nombres"></datalist>
-      </div>
-      <div><label for="colegio">Colegio</label><select id="colegio"></select></div>
-      <div class="solo-alumnos"><label for="nivel">Nivel</label><select id="nivel"></select></div>
-      <div class="solo-alumnos"><label for="grado">Grado</label><select id="grado"></select></div>
-      <div class="solo-alumnos"><label for="tipo">Tipo</label>
-        <select id="tipo">
-          <option value="">Todos</option>
-          <option value="DELEGACION">Delegación</option>
-          <option value="LIBRE">Alumno libre</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="barra">
-      <span id="conteo"></span>
-      <span>
-        <span id="info"></span>
-        <button id="btnAct" type="button">Actualizar</button>
-        <button id="btnLimpiar" type="button" hidden>Limpiar filtros</button>
-      </span>
-    </div>
-
-    <nav id="chips" class="chips" aria-label="Ir a un grado"></nav>
-    <div id="vacio" class="vacio" hidden>No hay alumnos con esos filtros.</div>
-    <div id="grupos"></div>
-  </div>
-</main>
-
-<script src="/js/resultados.js"></script>
-<script src="/js/fondo.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/publico/main.jsx"></script>
 </body>
 </html>

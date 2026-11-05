@@ -19,6 +19,7 @@ Revisión del informe *PROYECTO_PLATAFORMA_CONCURSO_MATEMATICA_TARPUY_2026* comp
 | 14.2 (mejora 1) y 16 | Validar en el backend que el DNI sea único se plantea como mejora pendiente | **Ya está implementado**: el servidor rechaza DNI repetidos entre delegaciones y alumnos libres (409) | Pasarlo a «fortalezas» |
 | 14.2 (mejora 5) | El rate limiting es una propuesta | **Ya existe** en inscripciones (login y formularios) y en resultados (login) | Indicar que existe y que falta el CAPTCHA |
 | 6 y 9.1 | Una sola API REST | Dos APIs independientes, una por sistema | Ajustar la figura de arquitectura (ver `docs/arquitectura.md`) |
+| 7 (Tabla 4) | Frontend en HTML5, CSS3 y JavaScript | Ahora el frontend usa **React 19 + Tailwind CSS 4** (con Vite) | Actualizar la Tabla 4 y pasar la mejora 8 («Migrar el frontend a React») de propuesta a hecha |
 | RNF-08 | Código organizado por capas | Antes de esta reestructuración, cada backend estaba en un único `server.js` | Ahora sí se cumple: `routes`, `controllers`, `services`, `repositories` |
 
 ## 2. Problemas encontrados en el código
@@ -43,7 +44,8 @@ Revisión del informe *PROYECTO_PLATAFORMA_CONCURSO_MATEMATICA_TARPUY_2026* comp
 - Se separó el frontend del backend: `frontend/inscripciones` y `frontend/resultados`, con el CSS y el JS en archivos propios (antes estaban incrustados en el HTML).
 - Cada backend se dividió en capas: `config`, `routes`, `controllers`, `services`, `repositories`, `middlewares` y `utils`.
 - Base de datos: los dos backends usan `pg`; los scripts están en `database/scripts/`, son reejecutables y se instalan con `database/instalar.sh` o con `docker compose up`.
-- Los Dockerfile se construyen desde la raíz (ver `docs/despliegue.md`).
+- Frontend migrado a **React + Tailwind CSS**: componentes, estado con `useState`, servicios de API separados y estilos con clases utilitarias. Se mantuvieron el diseño, los textos y el comportamiento.
+- Los Dockerfile se construyen desde la raíz y compilan el frontend en una primera etapa (ver `docs/despliegue.md`).
 - Se reescribió el `README.md`; el anterior se veía mal en GitHub porque tenía caracteres escapados al copiarlo desde Word.
 
 ### Cómo se verificó
@@ -51,4 +53,9 @@ Revisión del informe *PROYECTO_PLATAFORMA_CONCURSO_MATEMATICA_TARPUY_2026* comp
 - **Inscripciones:** se levantaron la versión original y la nueva contra PostgreSQL 16 y se enviaron las mismas 24 peticiones a ambas (casos CP-01 a CP-10 del informe, duplicados, sesión, verificación, Excel y errores). Las 22 respuestas de la API fueron idénticas; las otras 2 son los archivos nuevos `css/estilos.css` y `js/app.js`. En el navegador, el formulario de alumno libre funcionó igual en ambas versiones.
 - **Scripts SQL:** instalación desde cero, segunda ejecución sobre la misma base (sin errores ni datos duplicados), actualización de una base creada con los scripts antiguos (la vista gana las columnas nuevas sin perder datos) y el script de inicio de Docker.
 - **Resultados con PostgreSQL y roles de permisos mínimos:** 23 casos (lectura pública, publicar y ocultar, búsqueda, guardado individual y en lote, importación, alumnos de último momento, DNI duplicado y clave incorrecta) y 8 comprobaciones de que los roles **no** pueden leer DNI, correos ni teléfonos, ni modificar lo que no les corresponde. La página pública mostró los rankings sin errores.
+- **Frontend React frente al original** (mismo guion en el navegador sobre la versión anterior y la nueva):
+  - Inscripciones: 16 de 16 pasos idénticos (validaciones, DNI repetido, asesor faltante, contador por grado, total S/ 39, envío y limpieza del formulario, alumno libre, acceso del organizador, resumen, alerta ⚠ de operación repetida, verificación de pago y cierre de sesión).
+  - Resultados públicos: 12 de 12 pasos idénticos (los tres rankings, filtros, orden por columna, búsqueda y chips).
+  - Panel de resultados: 17 de 17 pasos idénticos, más el guardado en lote (clave incorrecta, publicar y ocultar, búsqueda, ficha de puntaje, carga por grado, alumno de último momento, importación de CSV).
+  - Capturas de pantalla en computadora y en celular, sin diferencias visibles, y sin errores de JavaScript.
 - **No probado:** la construcción real de las imágenes Docker, el despliegue en Fly.io y la ejecución contra la base de producción en Neon.

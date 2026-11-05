@@ -16,7 +16,7 @@ Sistema de Resultados:
 fly deploy . --config backend/resultados/fly.toml --dockerfile backend/resultados/Dockerfile
 ```
 
-El `.` indica que el contexto de construcción es la raíz. El archivo `.dockerignore` excluye `.git`, `node_modules`, `.env` y `docs/`.
+El `.` indica que el contexto de construcción es la raíz. Cada Dockerfile tiene **dos etapas**: la primera instala las dependencias del frontend y ejecuta `npm run build` (React + Tailwind); la segunda instala solo las dependencias de producción del backend y copia la carpeta `dist/` ya compilada. La imagen final no lleva Vite, React en modo desarrollo ni el código fuente del frontend. El archivo `.dockerignore` excluye `.git`, `node_modules`, `dist`, `.env` y `docs/`. Las imágenes usan Node.js 22 porque Vite 8 necesita Node.js 20.19 o superior.
 
 ## Base de datos
 

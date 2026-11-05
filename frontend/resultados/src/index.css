@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/* ---------- Tema «Noche y celeste» del Sistema de Resultados ---------- */
+@theme {
+  --color-noche-0: #041440;
+  --color-noche-1: #07226b;
+  --color-verde: #6fdcff;
+  --color-verde-2: #aeeaff;
+  --color-texto: #e9f4ef;
+  --color-texto-2: #a7bad0;
+  --color-linea: rgba(120, 220, 255, .2);
+  --color-vidrio: rgba(255, 255, 255, .045);
+  --color-oro: #ffd426;
+  --color-plata: #dde7f4;
+  --color-bronce: #ff9d4d;
+  --color-error: #ff9ca4;
+  --color-titulo: #7fe0ff;
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-exo: "Exo 2", "Inter", system-ui, sans-serif;
+
+  --animate-aparece: aparece .8s ease both;
+  --animate-fila: aparece .45s ease both;
+  --animate-respira: respira 2.6s ease-in-out infinite;
+  --animate-logo: flota 7s ease-in-out infinite, brillo 5s ease-in-out infinite alternate;
+  --animate-pulso: pulso 2.6s ease-in-out infinite;
+  --animate-simbolo: sube var(--d, 30s) linear infinite, giro var(--r, 8s) ease-in-out infinite alternate;
+
+  @keyframes aparece { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes respira { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+  @keyframes flota { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes brillo {
+    from { filter: drop-shadow(0 0 16px rgba(150, 215, 255, .35)); }
+    to { filter: drop-shadow(0 0 34px rgba(150, 215, 255, .75)); }
+  }
+  @keyframes pulso { 0%, 100% { text-shadow: 0 0 0 rgba(255, 214, 102, 0); } 50% { text-shadow: 0 0 14px rgba(255, 214, 102, .9); } }
+  @keyframes sube { from { transform: translateY(0); } to { transform: translateY(-120vh); } }
+  @keyframes giro { from { rotate: calc(var(--a, 0deg) * -1); } to { rotate: var(--a, 0deg); } }
+}
+
+/* Estilo base de los controles de formulario (todas las páginas de resultados) */
+@layer base {
+  :root { color-scheme: dark; }
+  html { background: var(--color-noche-0); }
+  body {
+    @apply m-0 min-h-screen font-sans text-base/[1.55] text-texto;
+    background: radial-gradient(1200px 800px at 50% 0%, #2a62d8 0%, #0d3398 45%, #061a5c 100%) fixed;
+  }
+  label { @apply mb-1 block text-[.85rem] text-texto-2; }
+  input, select, button {
+    @apply w-full rounded-[10px] border border-linea bg-white/6 px-3 py-[9px] text-texto;
+    font: inherit;
+    transition: border-color .2s, box-shadow .2s, background .2s, transform .15s;
+  }
+  input::placeholder { color: rgba(167, 186, 208, .6); }
+  select option, select optgroup { background: var(--color-noche-1); color: var(--color-texto); }
+  input:focus-visible, select:focus-visible, button:focus-visible {
+    @apply border-verde outline-none;
+    box-shadow: 0 0 0 3px rgba(120, 220, 255, .25);
+  }
+  button { @apply w-auto cursor-pointer; }
+  button:hover { @apply -translate-y-px border-verde bg-[rgba(120,220,255,.1)]; }
+  a { @apply text-verde; }
+  [hidden] { display: none !important; }
+}
+
+/* Variantes de botón que se repiten en todo el panel */
+@layer components {
+  .boton-primario {
+    @apply border-transparent font-bold text-[#04153a];
+    background: linear-gradient(135deg, var(--color-verde), #4fb8ff);
+  }
+  .boton-primario:hover { box-shadow: 0 6px 22px rgba(120, 220, 255, .35); background: linear-gradient(135deg, #9be6ff, #72c8ff); }
+  .boton-peligro { @apply border-[rgba(255,156,164,.5)] text-error; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

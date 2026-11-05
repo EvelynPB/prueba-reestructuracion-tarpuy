@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* ---------- Colores, fuentes y animaciones del concurso (se usan como clases: bg-tarjeta, text-suave, font-serif…) ---------- */
+@theme {
+  --color-fondo: #081538;
+  --color-tarjeta: #0d1f52;
+  --color-tinta: #eef3ff;
+  --color-suave: #9db4e6;
+  --color-linea: #2b4486;
+  --color-primario: #6fa8ff;
+  --color-acento: #5fd0ff;
+  --color-oscuro: #07163f;
+  --color-ok: #12a36b;
+  --color-error: #d93a3a;
+  --color-yape: #7a2cff;
+  --color-yape-claro: #cdb8ff;
+  --color-yape-total: #b99cff;
+  --color-cian: #7fe3ff;
+  --color-cielo: #b9d0fb;
+
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-serif: "Fraunces", serif;
+  --font-exo: "Exo 2", "DM Sans", sans-serif;
+
+  --animate-logo: logo-pulso 5s ease-in-out infinite;
+  --animate-simbolo: simbolo-flota var(--d) linear var(--t) infinite;
+
+  @keyframes logo-pulso {
+    0%, 100% { filter: drop-shadow(0 0 22px rgba(80, 170, 255, .4)); }
+    50% { filter: drop-shadow(0 0 42px rgba(110, 200, 255, .85)); }
+  }
+  @keyframes simbolo-flota {
+    0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+    12% { opacity: .45; }
+    50% { transform: translate(var(--x, 30px), -60vh) rotate(calc(var(--r, 90deg) / 2)); }
+    88% { opacity: .45; }
+    100% { transform: translate(0, -115vh) rotate(var(--r, 90deg)); opacity: 0; }
+  }
+}
+
+@layer base {
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    @apply m-0 font-sans text-base/normal text-tinta;
+    background: radial-gradient(ellipse at 50% 0%, #1346c4 0%, #0a2a86 38%, #041240 100%) fixed;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  input, select { color-scheme: dark; }
+  summary::-webkit-details-marker { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo-animado { display: none; }
+}

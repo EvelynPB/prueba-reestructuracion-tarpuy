@@ -1,5 +1,8 @@
-﻿.idea/
+.idea/
 .env
 **/.env
 node_modules/
 **/node_modules/
+# Frontend compilado (se genera con «npm run build»)
+dist/
+**/dist/

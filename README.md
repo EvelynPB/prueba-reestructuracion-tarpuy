@@ -19,18 +19,25 @@ La plataforma apoya la gestión del **XI Concurso Nacional de Matemática Lima E
 
 ```text
 .
-├── frontend/                     Capa de presentación (HTML, CSS y JavaScript del navegador)
+├── frontend/                     Capa de presentación: React 19 + Tailwind CSS 4 (con Vite)
 │   ├── inscripciones/
-│   │   ├── index.html            Formulario de inscripción y panel del organizador
-│   │   ├── css/estilos.css
-│   │   └── js/app.js
+│   │   ├── index.html            Página única: formulario de inscripción y panel del organizador
+│   │   ├── public/img/           Logo y QR de Yape
+│   │   └── src/
+│   │       ├── App.jsx           Modalidad (delegación o alumno libre) y panel del organizador
+│   │       ├── components/       comunes/ · delegacion/ · libre/ · organizador/
+│   │       ├── config/           Datos del concurso: grados, precios, Yape y cuenta bancaria
+│   │       ├── services/api.js   Llamadas a la API REST
+│   │       └── utils/            Validaciones (DNI, teléfono, N.° de operación)
 │   └── resultados/
 │       ├── resultados.html       Consulta pública de resultados
 │       ├── admin.html            Panel de carga de puntajes
 │       ├── index.html            Página de inicio de ejemplo
-│       ├── css/                  estilos.css (común) y admin.css
-│       ├── js/                   resultados.js, admin.js y fondo.js (animación)
-│       └── img/logo.png
+│       └── src/
+│           ├── publico/          Página pública: pestañas, filtros, tablas y ranking
+│           ├── admin/            Panel: búsqueda, ficha, carga por grado, importación, último momento
+│           ├── components/       Cabecera y fondo animado
+│           └── utils/            Normalización de texto, orden natural, puntaje máximo
 │
 ├── backend/                      API REST en Node.js + Express (una aplicación por sistema)
 │   ├── inscripciones/
@@ -61,14 +68,14 @@ La plataforma apoya la gestión del **XI Concurso Nacional de Matemática Lima E
 └── README.md
 ```
 
-Cada backend sirve su propio frontend: el de inscripciones publica `frontend/inscripciones` y el de resultados publica `frontend/resultados`. Por eso cada imagen Docker se construye desde la raíz del repositorio (ver [docs/despliegue.md](docs/despliegue.md)).
+Cada frontend se compila con `npm run build` en una carpeta `dist/`, y su backend la sirve: el de inscripciones publica `frontend/inscripciones/dist` y el de resultados publica `frontend/resultados/dist`. Por eso cada imagen Docker se construye desde la raíz del repositorio y compila primero el frontend (ver [docs/despliegue.md](docs/despliegue.md)).
 
 ---
 
 ## Arquitectura
 
 ```text
-Navegador (HTML + CSS + JS, Fetch API)
+Navegador (React + Tailwind CSS, Fetch API)
         │  HTTPS / JSON
         ▼
 routes → middlewares → controllers → services → repositories
@@ -85,7 +92,7 @@ Detalle en [docs/arquitectura.md](docs/arquitectura.md).
 
 | Capa | Tecnologías |
 |---|---|
-| Frontend | HTML5, CSS3, JavaScript ES6+, Fetch API, Canvas API, Google Fonts |
+| Frontend | React 19, Tailwind CSS 4, Vite 8, JavaScript ES6+, Fetch API, Canvas API, Google Fonts |
 | Backend | Node.js, Express.js, `express-rate-limit`, `exceljs` |
 | Datos | PostgreSQL 16 con el driver `pg`, scripts SQL versionados y roles de permisos mínimos |
 | Despliegue | Docker, Fly.io |
@@ -95,7 +102,7 @@ Detalle en [docs/arquitectura.md](docs/arquitectura.md).
 
 ## Ejecución local
 
-Requisitos: Node.js 20 o superior y PostgreSQL 16 (con Docker o instalado en tu computadora).
+Requisitos: Node.js 20.19 o superior (recomendado 22) y PostgreSQL 16 (con Docker o instalado en tu computadora).
 
 ### 1. Base de datos
 
@@ -116,7 +123,9 @@ export CLAVE_ADMIN="admin_local"
 
 En Windows, ejecuta `instalar.sh` desde Git Bash. Más detalles en [docs/base-de-datos.md](docs/base-de-datos.md).
 
-### 2. Sistema de Inscripciones
+### 2. Backends
+
+En una terminal para cada sistema:
 
 ```bash
 cd backend/inscripciones
@@ -125,10 +134,6 @@ npm install
 npm run dev
 ```
 
-Abre http://localhost:8080. Ajusta `DATABASE_URL` en `.env` si no usas los valores de `docker-compose.yml`.
-
-### 3. Sistema de Resultados
-
 ```bash
 cd backend/resultados
 cp .env.example .env
@@ -136,7 +141,33 @@ npm install
 npm run dev
 ```
 
-Abre http://localhost:3000/resultados y http://localhost:3000/admin (la clave es `ADMIN_PASSWORD` de tu `.env`). Este sistema se conecta con dos roles de permisos mínimos: `resultados_lector` para la página pública y `resultados_admin` para el panel.
+Ajusta `DATABASE_URL` en cada `.env` si no usas los valores de `docker-compose.yml`. El backend de resultados se conecta con dos roles de permisos mínimos: `resultados_lector` para la página pública y `resultados_admin` para el panel.
+
+### 3. Frontends (React + Tailwind)
+
+**Para programar**, con recarga automática al guardar los cambios:
+
+```bash
+cd frontend/inscripciones
+npm install
+npm run dev
+```
+
+```bash
+cd frontend/resultados
+npm install
+npm run dev
+```
+
+| Página | Dirección en desarrollo |
+|---|---|
+| Inscripciones | http://localhost:5173 |
+| Resultados (público) | http://localhost:5174/resultados |
+| Resultados (panel) | http://localhost:5174/admin (clave: `ADMIN_PASSWORD` del `.env`) |
+
+Vite reenvía las peticiones `/api` al backend correspondiente (puertos 8080 y 3000), así que los backends deben estar encendidos.
+
+**Para probar como en producción:** ejecuta `npm run build` en cada carpeta de `frontend/` y abre los backends directamente: http://localhost:8080, http://localhost:3000/resultados y http://localhost:3000/admin.
 
 ---
 

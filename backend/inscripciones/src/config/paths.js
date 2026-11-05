@@ -6,6 +6,7 @@ const RAIZ = path.resolve(__dirname, '..', '..', '..', '..');
 
 module.exports = {
   RAIZ,
-  FRONTEND: path.join(RAIZ, 'frontend', 'inscripciones'),
+  // Carpeta que genera «npm run build» en frontend/inscripciones (React + Tailwind)
+  FRONTEND: path.join(RAIZ, 'frontend', 'inscripciones', 'dist'),
   SCHEMA_SQL: path.join(RAIZ, 'database', 'scripts', '01_inscripciones.sql'),
 };

@@ -4,4 +4,5 @@ import { fileURLToPath } from 'node:url';
 
 const aqui = path.dirname(fileURLToPath(import.meta.url));
 export const RAIZ = path.resolve(aqui, '..', '..', '..', '..');
-export const FRONTEND = path.join(RAIZ, 'frontend', 'resultados');
+// Carpeta que genera «npm run build» en frontend/resultados (React + Tailwind)
+export const FRONTEND = path.join(RAIZ, 'frontend', 'resultados', 'dist');
