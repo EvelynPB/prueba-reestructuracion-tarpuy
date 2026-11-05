@@ -3,7 +3,7 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY backend/resultados/package*.json ./backend/resultados/
-RUN cd backend/resultados && npm install --omit=dev
+RUN cd backend/resultados && npm ci --omit=dev
 COPY backend/resultados ./backend/resultados
 COPY frontend/resultados ./frontend/resultados
 WORKDIR /app/backend/resultados

@@ -1,6 +1,6 @@
 # Cambia el nombre: debe ser único en todo Fly.io (será tu-nombre.fly.dev)
 app = "concurso-resultados-tarpuy"
-# gru = São Paulo, scl = Santiago. Elige la más cercana a tu base de Neon.
+# gru = São Paulo, scl = Santiago. Elige la más cercana a tu servidor PostgreSQL.
 primary_region = "gru"
 
 [build]

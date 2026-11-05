@@ -1,7 +1,7 @@
 'use strict';
 /**
  * XI Concurso Nacional de Matemática Lima Este 2026 · Tarpuy
- * Servidor de inscripciones (Express + Postgres/Neon)
+ * Servidor de inscripciones (Express + PostgreSQL)
  *
  * Punto de entrada: prepara las tablas y levanta la API.
  * La lógica está organizada por capas en src/ (config, routes, controllers, services, repositories).

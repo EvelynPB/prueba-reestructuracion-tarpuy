@@ -50,9 +50,12 @@ La plataforma apoya la gestión del **XI Concurso Nacional de Matemática Lima E
 │       └── package.json · Dockerfile · fly.toml
 │
 ├── database/
-│   └── scripts/                  01_inscripciones.sql · 02_resultados.sql · 03_resultados_roles.sql
+│   ├── scripts/                  01_inscripciones · 02_resultados · 03_roles · 04_datos_prueba (.sql)
+│   ├── instalar.sh               Crea o actualiza la base en cualquier PostgreSQL
+│   └── docker/initdb.sh          Lo usa docker-compose la primera vez
 │
 ├── docs/                         Arquitectura, API, base de datos, despliegue y observaciones
+├── docker-compose.yml            PostgreSQL local para desarrollo
 ├── .dockerignore
 ├── .gitignore
 └── README.md
@@ -71,7 +74,7 @@ Navegador (HTML + CSS + JS, Fetch API)
 routes → middlewares → controllers → services → repositories
         (Node.js + Express)                          │ SQL
                                                      ▼
-                                     PostgreSQL (Neon)
+                         PostgreSQL (local, Neon u otro)
 ```
 
 Detalle en [docs/arquitectura.md](docs/arquitectura.md).
@@ -84,7 +87,7 @@ Detalle en [docs/arquitectura.md](docs/arquitectura.md).
 |---|---|
 | Frontend | HTML5, CSS3, JavaScript ES6+, Fetch API, Canvas API, Google Fonts |
 | Backend | Node.js, Express.js, `express-rate-limit`, `exceljs` |
-| Datos | PostgreSQL en Neon (`pg` en inscripciones, `@neondatabase/serverless` en resultados) |
+| Datos | PostgreSQL 16 con el driver `pg`, scripts SQL versionados y roles de permisos mínimos |
 | Despliegue | Docker, Fly.io |
 | Trabajo colaborativo | Git, GitHub |
 
@@ -92,47 +95,48 @@ Detalle en [docs/arquitectura.md](docs/arquitectura.md).
 
 ## Ejecución local
 
-Requisitos: Node.js 20 o superior, npm y una base PostgreSQL (local o Neon).
+Requisitos: Node.js 20 o superior y PostgreSQL 16 (con Docker o instalado en tu computadora).
 
-### Sistema de Inscripciones
+### 1. Base de datos
+
+**Opción A, con Docker** (recomendada): crea la base `concurso` con las tablas, los roles y datos de prueba ficticios.
+
+```bash
+docker compose up -d
+```
+
+**Opción B, con un PostgreSQL ya instalado** (requiere el cliente `psql`). Primero crea una base vacía, por ejemplo `concurso`, y luego:
+
+```bash
+export DATABASE_URL="postgresql://postgres:TU_CLAVE@localhost:5432/concurso"
+export CLAVE_LECTOR="lector_local"
+export CLAVE_ADMIN="admin_local"
+./database/instalar.sh --datos-prueba
+```
+
+En Windows, ejecuta `instalar.sh` desde Git Bash. Más detalles en [docs/base-de-datos.md](docs/base-de-datos.md).
+
+### 2. Sistema de Inscripciones
 
 ```bash
 cd backend/inscripciones
+cp .env.example .env
 npm install
+npm run dev
 ```
 
-Variables de entorno necesarias (en Windows PowerShell usa `$env:NOMBRE="valor"`):
+Abre http://localhost:8080. Ajusta `DATABASE_URL` en `.env` si no usas los valores de `docker-compose.yml`.
 
-```bash
-export DATABASE_URL="postgresql://usuario:clave@host/base?sslmode=require"
-export ADMIN_PASSWORD="clave-del-organizador"
-export SESSION_SECRET="una-cadena-larga-y-aleatoria"
-```
-
-```bash
-npm start
-```
-
-Abre http://localhost:8080. Las tablas se crean solas al arrancar (script `database/scripts/01_inscripciones.sql`).
-
-### Sistema de Resultados
+### 3. Sistema de Resultados
 
 ```bash
 cd backend/resultados
+cp .env.example .env
 npm install
+npm run dev
 ```
 
-```bash
-export DATABASE_URL_LECTOR="postgresql://resultados_lector:...@host/base?sslmode=require"
-export DATABASE_URL_ADMIN="postgresql://resultados_admin:...@host/base?sslmode=require"
-export ADMIN_PASSWORD="clave-del-panel"
-```
-
-```bash
-npm start
-```
-
-Abre http://localhost:3000/resultados y http://localhost:3000/admin. Este sistema usa el driver HTTP de Neon, así que necesita una base de datos en Neon (no funciona con un PostgreSQL local). Antes debes ejecutar los scripts `02` y `03` de `database/scripts` (ver [docs/base-de-datos.md](docs/base-de-datos.md)).
+Abre http://localhost:3000/resultados y http://localhost:3000/admin (la clave es `ADMIN_PASSWORD` de tu `.env`). Este sistema se conecta con dos roles de permisos mínimos: `resultados_lector` para la página pública y `resultados_admin` para el panel.
 
 ---
 

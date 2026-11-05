@@ -1,33 +1,34 @@
 /**
  * Consultas del panel sobre los inscritos (tablas alumnos, libres y fichas del Sistema de Inscripciones).
- * El rol resultados_admin solo puede leer las columnas necesarias (ver database/scripts/03_resultados_roles.sql).
+ * El rol resultados_admin solo puede usar las columnas necesarias (ver database/scripts/03_roles.sql).
+ * Todas las consultas son parametrizadas ($1, $2…): los datos nunca se concatenan en el SQL.
  */
-import { sqlAdmin } from '../config/db.js';
+import { poolAdmin, filas } from '../config/db.js';
 
-const sql = () => sqlAdmin();
+const q = (text, values = []) => filas(poolAdmin(), { text, values });
 
 export function buscar(patron) {
-  return sql()`
+  return q(`
     SELECT * FROM (
       SELECT 'DELEGACION' AS tipo, a.id, a.nombre, a.dni, a.nivel, a.grado,
              f.ie AS colegio, r.puntaje, r.hora_entrega
       FROM alumnos a
       JOIN fichas f ON f.id = a.ficha_id
       LEFT JOIN resultados r ON r.alumno_id = a.id
-      WHERE unaccent(a.nombre) ILIKE unaccent(${patron}) OR a.dni LIKE ${patron}
+      WHERE unaccent(a.nombre) ILIKE unaccent($1::text) OR a.dni LIKE $1::text
       UNION ALL
       SELECT 'LIBRE', l.id, l.nombre, l.dni, l.nivel, l.grado,
              'Alumno libre', r.puntaje, r.hora_entrega
       FROM libres l
       LEFT JOIN resultados r ON r.libre_id = l.id
-      WHERE unaccent(l.nombre) ILIKE unaccent(${patron}) OR l.dni LIKE ${patron}
+      WHERE unaccent(l.nombre) ILIKE unaccent($1::text) OR l.dni LIKE $1::text
     ) t
     ORDER BY nombre
-    LIMIT 20`;
+    LIMIT 20`, [patron]);
 }
 
 export function inscritos() {
-  return sql()`
+  return q(`
     SELECT 'DELEGACION' AS tipo, a.id, a.nombre, a.dni, a.nivel, a.grado,
            f.ie AS colegio, r.puntaje, r.hora_entrega
     FROM alumnos a
@@ -38,96 +39,96 @@ export function inscritos() {
            'Alumno libre', r.puntaje, r.hora_entrega
     FROM libres l
     LEFT JOIN resultados r ON r.libre_id = l.id
-    ORDER BY nivel, grado, colegio, nombre`;
+    ORDER BY nivel, grado, colegio, nombre`);
 }
 
 export async function nivelDe(tipo, id) {
   const [al] = tipo === 'DELEGACION'
-    ? await sql()`SELECT nivel FROM alumnos WHERE id = ${id}`
-    : await sql()`SELECT nivel FROM libres WHERE id = ${id}`;
+    ? await q('SELECT nivel FROM alumnos WHERE id = $1', [id])
+    : await q('SELECT nivel FROM libres WHERE id = $1', [id]);
   return al ? al.nivel : null;
 }
 
 export function nivelesDeTodos() {
-  return sql()`
+  return q(`
     SELECT 'DELEGACION' AS tipo, id, nivel FROM alumnos
     UNION ALL
-    SELECT 'LIBRE', id, nivel FROM libres`;
+    SELECT 'LIBRE', id, nivel FROM libres`);
 }
 
 /** Todos los inscritos con datos para asignar puntajes por DNI al importar. */
 export function todosParaImportar() {
-  return sql()`
+  return q(`
     SELECT 'DELEGACION' AS tipo, a.id, a.nombre, a.dni, a.nivel, a.grado, f.ie AS colegio
     FROM alumnos a JOIN fichas f ON f.id = a.ficha_id
     UNION ALL
-    SELECT 'LIBRE', l.id, l.nombre, l.dni, l.nivel, l.grado, 'Alumno libre' FROM libres l`;
+    SELECT 'LIBRE', l.id, l.nombre, l.dni, l.nivel, l.grado, 'Alumno libre' FROM libres l`);
 }
 
 export function paresNivelGrado() {
-  return sql()`
+  return q(`
     SELECT DISTINCT nivel, grado FROM (
       SELECT nivel, grado FROM alumnos
       UNION ALL
       SELECT nivel, grado FROM libres
-    ) t`;
+    ) t`);
 }
 
 export async function mediosUsados() {
-  return (await sql()`SELECT DISTINCT medio FROM libres WHERE medio <> '' ORDER BY medio`).map(m => m.medio);
+  return (await q(`SELECT DISTINCT medio FROM libres WHERE medio <> '' ORDER BY medio`)).map(m => m.medio);
 }
 
 export function colegios(patron) {
-  return sql()`
+  return q(`
     SELECT f.id, f.ie, COUNT(a.id)::int AS alumnos
     FROM fichas f
     LEFT JOIN alumnos a ON a.ficha_id = f.id
-    WHERE unaccent(f.ie) ILIKE unaccent(${patron})
+    WHERE unaccent(f.ie) ILIKE unaccent($1::text)
     GROUP BY f.id, f.ie
     ORDER BY f.ie
-    LIMIT 1000`;
+    LIMIT 1000`, [patron]);
 }
 
 export async function colegioPorId(fichaId) {
-  const [f] = await sql()`SELECT ie FROM fichas WHERE id = ${fichaId}`;
+  const [f] = await q('SELECT ie FROM fichas WHERE id = $1', [fichaId]);
   return f || null;
 }
 
 export async function buscarPorDni(dni) {
-  const dup = await sql()`
-    SELECT nombre FROM alumnos WHERE dni = ${dni}
+  const dup = await q(`
+    SELECT nombre FROM alumnos WHERE dni = $1
     UNION ALL
-    SELECT nombre FROM libres WHERE dni = ${dni}
-    LIMIT 1`;
+    SELECT nombre FROM libres WHERE dni = $1
+    LIMIT 1`, [dni]);
   return dup.length ? dup[0] : null;
 }
 
 /** Una sola instrucción: agrega al alumno, registra su pago y suma el monto a la ficha (todo o nada). */
 export async function agregarAlumnoADelegacion({ ficha_id, nivel, grado, dni, nombre, monto, medio, operacion }) {
-  const [n] = await sql()`
+  const [n] = await q(`
     WITH nuevo AS (
       INSERT INTO alumnos (ficha_id, nivel, grado, nro, dni, nombre)
-      SELECT ${ficha_id}::int, ${nivel}::text, ${grado}::text,
-             COALESCE(MAX(nro), 0) + 1, ${dni}::text, ${nombre}::text
-      FROM alumnos WHERE ficha_id = ${ficha_id}::int
+      SELECT $1::int, $2::text, $3::text, COALESCE(MAX(nro), 0) + 1, $4::text, $5::text
+      FROM alumnos WHERE ficha_id = $1::int
       RETURNING id, nro
     ), pago AS (
       INSERT INTO pagos_adicionales (ficha_id, alumno_id, monto, medio, operacion)
-      SELECT ${ficha_id}::int, nuevo.id, ${monto}::int, ${medio}::text, ${operacion}::text FROM nuevo
+      SELECT $1::int, nuevo.id, $6::int, $7::text, $8::text FROM nuevo
       RETURNING id
     ), ficha AS (
-      UPDATE fichas SET monto = monto + ${monto}::int WHERE id = ${ficha_id}::int
+      UPDATE fichas SET monto = monto + $6::int WHERE id = $1::int
       RETURNING monto
     )
-    SELECT nuevo.id, nuevo.nro, (SELECT monto FROM ficha) AS monto_ficha FROM nuevo`;
+    SELECT nuevo.id, nuevo.nro, (SELECT monto FROM ficha) AS monto_ficha FROM nuevo`,
+  [ficha_id, nivel, grado, dni, nombre, monto, medio, operacion]);
   return n;
 }
 
 export async function agregarLibre({ dni, grado, nivel, nombre, monto, operacion, medio, pagador, verificado, telefono }) {
-  const [n] = await sql()`
+  const [n] = await q(`
     INSERT INTO libres (dni, grado, nivel, nombre, monto, operacion, medio, pagador, verificado, created_at, telefono)
-    VALUES (${dni}::text, ${grado}::text, ${nivel}::text, ${nombre}::text, ${monto}::int,
-            ${operacion}::text, ${medio}::text, ${pagador}::text, ${verificado}::boolean, now(), ${telefono}::text)
-    RETURNING id`;
+    VALUES ($1::text, $2::text, $3::text, $4::text, $5::int, $6::text, $7::text, $8::text, $9::boolean, now(), $10::text)
+    RETURNING id`,
+  [dni, grado, nivel, nombre, monto, operacion, medio, pagador, verificado, telefono]);
   return n;
 }

@@ -1,5 +1,5 @@
 'use strict';
-/** Conexión a PostgreSQL (Neon) mediante un pool de conexiones. */
+/** Conexión a PostgreSQL (local, Neon u otro proveedor) mediante un pool de conexiones. */
 const { Pool } = require('pg');
 const { DATABASE_URL } = require('./env');
 

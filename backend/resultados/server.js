@@ -1,6 +1,6 @@
 /**
  * Sistema de Resultados · XI Concurso Nacional de Matemática Lima Este 2026
- * Página pública de resultados y panel de carga de puntajes (Express + Neon).
+ * Página pública de resultados y panel de carga de puntajes (Express + PostgreSQL).
  *
  * Punto de entrada. La lógica está organizada por capas en src/
  * (config, routes, controllers, services, repositories).

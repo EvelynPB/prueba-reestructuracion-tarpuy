@@ -6,40 +6,49 @@ Revisión del informe *PROYECTO_PLATAFORMA_CONCURSO_MATEMATICA_TARPUY_2026* comp
 
 | Sección del informe | Lo que dice el informe | Lo que hace el código | Sugerencia |
 |---|---|---|---|
-| 7 (Tabla 4) y 10 (Tabla 10) | Se usa un ORM | No hay ORM: se usan consultas SQL parametrizadas con `pg` y `@neondatabase/serverless` | Reemplazar «ORM» por «consultas parametrizadas» (protegen igual contra la inyección SQL) |
+| 7 (Tabla 4) y 10 (Tabla 10) | Se usa un ORM | No hay ORM: se usan consultas SQL parametrizadas con el driver `pg` | Reemplazar «ORM» por «consultas parametrizadas» (protegen igual contra la inyección SQL) |
 | 7 (Tabla 4) | La contraseña del organizador se protege con bcrypt | La contraseña está en una variable de entorno y se compara en tiempo constante (`timingSafeEqual`); no hay bcrypt | Describir el mecanismo real o implementar bcrypt |
-| 9.4 (Tabla 8) | Tablas `ficha_delegacion`, `asesor`, `alumno`, `inscripcion_libre`, `resultado`, `usuario_admin`, `configuracion` | Tablas `fichas`, `asesores`, `alumnos`, `libres`, `resultados`, `config_resultados`; no existe una tabla de usuarios | Actualizar el diccionario de datos y el diagrama E-R (ver `docs/base-de-datos.md`) |
+| 9.4 (Tabla 8) | Tablas `ficha_delegacion`, `asesor`, `alumno`, `inscripcion_libre`, `resultado`, `usuario_admin`, `configuracion` | Tablas `fichas`, `asesores`, `alumnos`, `libres`, `pagos_adicionales`, `resultados`, `config_resultados`; no existe una tabla de usuarios | Actualizar el diccionario de datos y el diagrama E-R con `docs/base-de-datos.md` |
 | 9.4 | `inscripcion_libre` tiene FK a `alumno` | `libres` es una tabla independiente con su propio DNI | Corregir el diagrama |
+| 9.4 / 10 | Una sola credencial de base de datos | Tres conexiones: el dueño (inscripciones), `resultados_lector` y `resultados_admin` (permisos mínimos) | Es una fortaleza de seguridad: conviene mencionarla en la Tabla 10 |
 | 9.5 (Tabla 9) | `POST /api/admin/resultados` y `PATCH /api/admin/publicacion` | Las rutas reales son `/api/admin/guardar`, `/guardar-lote`, `/importar` y `POST /api/admin/config` | Usar la tabla de `docs/api.md` |
 | 9.5 (Tabla 9) | El inicio de sesión del organizador es igual en ambos sistemas | Inscripciones usa cookie de sesión; Resultados usa una clave en la cabecera `x-admin-key` | Mencionar los dos mecanismos |
 | 1.3.4 y 5.1 | El concurso va de Inicial 5 años a 5.° de Secundaria | El código también admite **Inicial 4 años** | Confirmar con el colegio cuál es correcto |
 | 8.4 (RN-04) | El DNI tiene exactamente 8 dígitos | En 5.° de Primaria también se acepta un código de 14 dígitos; en el panel de resultados se aceptan de 8 a 12 caracteres alfanuméricos | Documentar la excepción |
+| 8.4 (RN-06) | Solo los alumnos con pago verificado entran en el orden de mérito | Las vistas de resultados incluyen a todos los inscritos, verificados o no | Decidir cuál es la regla y ajustar el informe o la vista |
 | 14.2 (mejora 1) y 16 | Validar en el backend que el DNI sea único se plantea como mejora pendiente | **Ya está implementado**: el servidor rechaza DNI repetidos entre delegaciones y alumnos libres (409) | Pasarlo a «fortalezas» |
 | 14.2 (mejora 5) | El rate limiting es una propuesta | **Ya existe** en inscripciones (login y formularios) y en resultados (login) | Indicar que existe y que falta el CAPTCHA |
 | 6 y 9.1 | Una sola API REST | Dos APIs independientes, una por sistema | Ajustar la figura de arquitectura (ver `docs/arquitectura.md`) |
 | RNF-08 | Código organizado por capas | Antes de esta reestructuración, cada backend estaba en un único `server.js` | Ahora sí se cumple: `routes`, `controllers`, `services`, `repositories` |
 
-## 2. Problemas encontrados en el código (no corregidos)
+## 2. Problemas encontrados en el código
 
-La reestructuración **no cambió el comportamiento** del sistema. Estos puntos quedan pendientes:
+### Corregidos
 
-1. **Scripts SQL incompletos.** La tabla `pagos_adicionales`, la vista `vista_ranking_colegios`, tres columnas de `vista_resultados` y varios permisos no están en `database/scripts/`. Detalle en `docs/base-de-datos.md`.
-2. **`GET` y `POST /api/admin/config` no capturan errores de la base.** Si Neon falla en ese momento, la promesa rechazada no se maneja y, con Node 20, el proceso puede detenerse. Solución: envolver ambos controladores en `try/catch`, como el resto.
-3. **Faltaba el ícono `logo-icono.png`.** Las páginas de resultados lo pedían, pero el archivo no existe. Se cambió para que usen `img/logo.png` (es el único cambio visible).
-4. **`frontend/resultados/index.html` es una página de ejemplo** («Esta es una página de inicio de ejemplo…»). En producción conviene redirigir `/` a `/resultados`.
-5. **El bloqueo por intentos fallidos de resultados vive en memoria.** Se reinicia si la máquina se apaga, y no se comparte si hay varias máquinas.
-6. **Datos personales en la vista pública.** `vista_resultados` no expone el DNI (bien), pero la Ley N.° 29733 que cita el informe también recomienda la casilla de consentimiento, que todavía no existe en el formulario (mejora 6).
+1. **Scripts SQL incompletos.** Faltaban la tabla `pagos_adicionales`, la vista `vista_ranking_colegios`, tres columnas de `vista_resultados` y varios permisos. Se reconstruyeron en `02_resultados.sql` y `03_roles.sql`. **Hay que compararlos con producción** (ver la sección 5 de `docs/base-de-datos.md`).
+2. **Permiso insuficiente del rol público.** El script original solo daba acceso a la columna `publicado` de `config_resultados`, pero el servidor consulta `WHERE id = 1`, que también necesita la columna `id`. Con el script original, la página pública respondía «No se pudieron cargar los resultados». Se descubrió al probar con PostgreSQL local.
+3. **Medios de pago del panel.** El panel registra alumnos libres pagados con Plin o en efectivo, pero la tabla `libres` solo admitía Yape y Transferencia, así que esa inserción fallaba. Se amplió la restricción en `02_resultados.sql`.
+4. **`GET` y `POST /api/admin/config` no capturaban errores de la base.** Si la base fallaba en ese momento, el proceso podía detenerse. Ahora responden 500, como el resto de rutas.
+5. **Dependencia del driver HTTP de Neon.** El backend de resultados solo funcionaba con Neon. Ahora usa `pg`, igual que inscripciones, y funciona con cualquier PostgreSQL.
+6. **Faltaba el ícono `logo-icono.png`.** Las páginas de resultados ahora usan `img/logo.png`.
+
+### Pendientes
+
+1. **`frontend/resultados/index.html` es una página de ejemplo.** En producción conviene redirigir `/` a `/resultados`.
+2. **El bloqueo por intentos fallidos de resultados vive en memoria.** Se reinicia si la máquina se apaga, y no se comparte si hay varias máquinas.
+3. **Consentimiento de datos personales.** `vista_resultados` no expone el DNI (bien), pero la casilla de consentimiento de la Ley N.° 29733 (mejora 6 del informe) todavía no existe en el formulario.
 
 ## 3. Cambios hechos en la reestructuración
 
 - Se separó el frontend del backend: `frontend/inscripciones` y `frontend/resultados`, con el CSS y el JS en archivos propios (antes estaban incrustados en el HTML).
 - Cada backend se dividió en capas: `config`, `routes`, `controllers`, `services`, `repositories`, `middlewares` y `utils`.
-- El esquema de inscripciones, que estaba dentro de `server.js`, pasó a `database/scripts/01_inscripciones.sql`; el servidor lo sigue ejecutando al arrancar.
-- Los Dockerfile ahora se construyen desde la raíz (ver `docs/despliegue.md`).
+- Base de datos: los dos backends usan `pg`; los scripts están en `database/scripts/`, son reejecutables y se instalan con `database/instalar.sh` o con `docker compose up`.
+- Los Dockerfile se construyen desde la raíz (ver `docs/despliegue.md`).
 - Se reescribió el `README.md`; el anterior se veía mal en GitHub porque tenía caracteres escapados al copiarlo desde Word.
 
 ### Cómo se verificó
 
-- Inscripciones: se levantaron la versión original y la nueva contra un PostgreSQL local y se enviaron las mismas 24 peticiones a ambas (casos CP-01 a CP-10 del informe, duplicados, sesión, verificación, Excel y errores). Las 22 respuestas de la API fueron idénticas; las otras 2 son los archivos nuevos `css/estilos.css` y `js/app.js`, que antes no existían.
-- Inscripciones (navegador): el formulario de alumno libre se llenó y envió en ambas versiones, con el mismo mensaje de confirmación y sin errores de JavaScript.
-- Resultados: se compararon las páginas, los archivos estáticos, las respuestas 401/429 y las validaciones que no necesitan base de datos. **No se pudo probar contra Neon**, porque el driver HTTP de Neon no funciona con un PostgreSQL local; hay que probar el panel de resultados con la base real antes de pasarlo al repositorio del curso.
+- **Inscripciones:** se levantaron la versión original y la nueva contra PostgreSQL 16 y se enviaron las mismas 24 peticiones a ambas (casos CP-01 a CP-10 del informe, duplicados, sesión, verificación, Excel y errores). Las 22 respuestas de la API fueron idénticas; las otras 2 son los archivos nuevos `css/estilos.css` y `js/app.js`. En el navegador, el formulario de alumno libre funcionó igual en ambas versiones.
+- **Scripts SQL:** instalación desde cero, segunda ejecución sobre la misma base (sin errores ni datos duplicados), actualización de una base creada con los scripts antiguos (la vista gana las columnas nuevas sin perder datos) y el script de inicio de Docker.
+- **Resultados con PostgreSQL y roles de permisos mínimos:** 23 casos (lectura pública, publicar y ocultar, búsqueda, guardado individual y en lote, importación, alumnos de último momento, DNI duplicado y clave incorrecta) y 8 comprobaciones de que los roles **no** pueden leer DNI, correos ni teléfonos, ni modificar lo que no les corresponde. La página pública mostró los rankings sin errores.
+- **No probado:** la construcción real de las imágenes Docker, el despliegue en Fly.io y la ejecución contra la base de producción en Neon.

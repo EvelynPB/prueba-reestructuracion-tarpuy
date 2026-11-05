@@ -1,6 +1,6 @@
 # Arquitectura
 
-La plataforma sigue una arquitectura **cliente-servidor de tres capas** (presentación, lógica de negocio y datos), con dos aplicaciones independientes que comparten la misma base de datos PostgreSQL.
+La plataforma sigue una arquitectura **cliente-servidor de tres capas** (presentación, lógica de negocio y datos), con dos aplicaciones independientes que comparten la misma base de datos PostgreSQL (local, Neon u otro proveedor).
 
 ```text
 ┌──────────────────────────┐        ┌──────────────────────────┐
@@ -10,12 +10,12 @@ La plataforma sigue una arquitectura **cliente-servidor de tres capas** (present
              │ HTTPS / JSON                       │ HTTPS / JSON
 ┌────────────▼─────────────┐        ┌────────────▼─────────────┐
 │ backend/inscripciones    │        │ backend/resultados       │
-│ Express · CommonJS · pg  │        │ Express · ESM · Neon HTTP│
+│ Express · CommonJS · pg  │        │ Express · ESM · pg       │
 └────────────┬─────────────┘        └────────────┬─────────────┘
              │ SQL                                │ SQL (2 roles)
              └──────────────┬─────────────────────┘
                    ┌────────▼────────┐
-                   │ PostgreSQL/Neon │
+                   │   PostgreSQL    │
                    └─────────────────┘
 ```
 
@@ -26,7 +26,7 @@ Los dos sistemas se desarrollaron y se despliegan por separado, y técnicamente 
 | | Inscripciones | Resultados |
 |---|---|---|
 | Módulos | CommonJS (`require`) | ES Modules (`import`) |
-| Driver de BD | `pg` (pool TCP) | `@neondatabase/serverless` (HTTP) |
+| Conexión a la BD | `pg`, un pool con el dueño de las tablas | `pg`, dos pools con roles de permisos mínimos (`resultados_lector` y `resultados_admin`) |
 | Autenticación | Cookie de sesión firmada (HMAC) | Clave en la cabecera `x-admin-key` |
 | Puerto | 8080 | 3000 |
 | App en Fly.io | `concurso-tarpuy-2026` | `concurso-resultados-tarpuy` |

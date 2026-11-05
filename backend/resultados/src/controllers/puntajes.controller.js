@@ -42,7 +42,7 @@ export async function guardar(req, res) {
     if (!nivel) return res.status(404).json({ error: 'Alumno no encontrado' });
     const maximo = maximoDe(nivel);
     if (pts > maximo) return res.status(400).json({ error: `El puntaje máximo en ${nivel} es ${maximo}` });
-    await puntajes.upsert(tipo, id, pts, h);
+    await puntajes.ejecutar(puntajes.upsert(tipo, id, pts, h));
     invalidar();
     res.json({ ok: true, hora: h });
   } catch (e) {

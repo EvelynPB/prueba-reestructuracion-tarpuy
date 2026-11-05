@@ -18,7 +18,19 @@ fly deploy . --config backend/resultados/fly.toml --dockerfile backend/resultado
 
 El `.` indica que el contexto de construcción es la raíz. El archivo `.dockerignore` excluye `.git`, `node_modules`, `.env` y `docs/`.
 
+## Base de datos
+
+Antes del primer despliegue, y cada vez que cambien los scripts SQL, ejecuta desde tu computadora con el usuario dueño de la base:
+
+```bash
+DATABASE_URL="postgresql://dueño:...@host/base?sslmode=require" CLAVE_LECTOR="..." CLAVE_ADMIN="..." ./database/instalar.sh
+```
+
+Es seguro repetirlo, porque no borra datos. En producción, primero revisa la sección «Objetos reconstruidos» de [base-de-datos.md](base-de-datos.md).
+
 ## Secretos
+
+`DATABASE_URL_LECTOR` y `DATABASE_URL_ADMIN` usan los roles `resultados_lector` y `resultados_admin` con las contraseñas que pasaste en `CLAVE_LECTOR` y `CLAVE_ADMIN`.
 
 Inscripciones:
 

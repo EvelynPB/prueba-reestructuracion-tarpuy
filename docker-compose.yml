@@ -1,0 +1,27 @@
+# PostgreSQL local para desarrollo:  docker compose up -d
+# Crea la base "concurso" con el esquema, los roles y datos de prueba ficticios.
+# Las contraseñas de aquí son SOLO para tu computadora; en producción usa otras (fly secrets).
+# Para empezar de cero:  docker compose down -v && docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: concurso
+      POSTGRES_USER: concurso
+      POSTGRES_PASSWORD: concurso_local
+      CLAVE_LECTOR: lector_local
+      CLAVE_ADMIN: admin_local
+      DATOS_PRUEBA: "si"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database:/database:ro
+      - ./database/docker/initdb.sh:/docker-entrypoint-initdb.d/10-instalar.sh:ro
+      - datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U concurso -d concurso"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  datos:
