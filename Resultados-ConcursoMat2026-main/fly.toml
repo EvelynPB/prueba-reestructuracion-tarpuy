@@ -1,0 +1,29 @@
+# Cambia el nombre: debe ser único en todo Fly.io (será tu-nombre.fly.dev)
+app = "concurso-resultados-tarpuy"
+# gru = São Paulo, scl = Santiago. Elige la más cercana a tu base de Neon.
+primary_region = "gru"
+
+[build]
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # 1 = siempre encendida (sin demora al abrir). Pon 0 para ahorrar cuando no haya concurso.
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"
