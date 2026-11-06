@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { cx } from '../utils/texto.js';
-import { enviarJSON } from './api.js';
+import { enviarJSON } from '../services/adminApi.js';
 import { leerArchivo } from './archivo.js';
 import { caja, nota, resumenCaja } from './estilos.js';
 

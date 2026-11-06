@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cx, maxNivel, natural, nivelCat, nivelOrden, norm } from '../utils/texto.js';
-import { enviarJSON } from './api.js';
+import { enviarJSON } from '../services/adminApi.js';
 import { caja, nota, resumenCaja } from './estilos.js';
 
 // Todos los grados del concurso: aparecen en el selector aunque todavía no tengan alumnos inscritos

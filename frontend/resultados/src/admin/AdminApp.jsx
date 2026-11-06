@@ -5,7 +5,7 @@ import BuscarAlumno from './BuscarAlumno.jsx';
 import CargaPorGrado from './CargaPorGrado.jsx';
 import FichaPuntaje from './FichaPuntaje.jsx';
 import Importar from './Importar.jsx';
-import { crearApi, enviarJSON } from './api.js';
+import { crearApi, enviarJSON } from '../services/adminApi.js';
 import { angosto } from './estilos.js';
 
 /** Panel del organizador del Sistema de Resultados (/admin). */

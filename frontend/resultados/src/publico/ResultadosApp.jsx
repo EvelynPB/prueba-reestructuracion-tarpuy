@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Cabecera from '../components/Cabecera.jsx';
 import FondoMatematico from '../components/FondoMatematico.jsx';
 import { cx, natural, nivelCat, nivelOrden, norm, plural, unicos } from '../utils/texto.js';
+import { leerRankingColegios, leerResultados } from '../services/resultadosApi.js';
 import { COLS_COLEGIOS, COLS_GENERAL, COLS_GRADO, conPuestoNivel, ordenar } from './ranking.js';
 import Tabla, { clasePodio } from './Tabla.jsx';
 
@@ -68,15 +69,10 @@ export default function ResultadosApp() {
 
   const cargar = useCallback(async () => {
     try {
-      const r = await fetch('/api/resultados', { cache: 'no-store' });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error);
+      const j = await leerResultados();
       setDatos(conPuestoNivel(j.datos)); setActualizado(Date.now());
-      try {
-        const r2 = await fetch('/api/ranking-colegios', { cache: 'no-store' });
-        const j2 = await r2.json();
-        setColegios(c => (r2.ok ? { ok: true, datos: j2.datos } : { ...c, ok: false }));
-      } catch { setColegios(c => ({ ...c, ok: false })); }
+      const ranking = await leerRankingColegios();
+      setColegios(c => (ranking.ok ? ranking : { ...c, ok: false }));
       setErrorActualizar(false);
       setEstado({ cargando: false, publicado: !!j.publicado, error: false });
       if (j.publicado && !yaAnimado.current) { yaAnimado.current = true; animarEntrada(); }

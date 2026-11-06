@@ -37,6 +37,7 @@ La plataforma apoya la gestión del **XI Concurso Nacional de Matemática Lima E
 │           ├── publico/          Página pública: pestañas, filtros, tablas y ranking
 │           ├── admin/            Panel: búsqueda, ficha, carga por grado, importación, último momento
 │           ├── components/       Cabecera y fondo animado
+│           ├── services/         Llamadas a la API (pública y del panel)
 │           └── utils/            Normalización de texto, orden natural, puntaje máximo
 │
 ├── backend/                      API REST en Node.js + Express (una aplicación por sistema)

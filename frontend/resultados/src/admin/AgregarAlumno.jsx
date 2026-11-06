@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { enviarJSON } from './api.js';
+import { enviarJSON } from '../services/adminApi.js';
 import { acciones, angosto, caja, fila2, resumenCaja } from './estilos.js';
 
 const NIVELES = [

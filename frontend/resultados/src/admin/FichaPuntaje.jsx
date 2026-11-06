@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { maxNivel } from '../utils/texto.js';
-import { enviarJSON } from './api.js';
+import { enviarJSON } from '../services/adminApi.js';
 import { acciones, angosto, caja, fila2 } from './estilos.js';
 
 /** Formulario para guardar o borrar el puntaje y la hora de entrega de un alumno. */
